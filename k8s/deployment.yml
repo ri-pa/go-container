@@ -1,0 +1,66 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helloworld
+  namespace: helloworld
+spec:
+  selector:
+    matchLabels:
+      app: helloworld
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        app: helloworld
+    spec:
+      containers:
+        - name: go-container
+          image: ghcr.io/ri-pa/go-container/go-container:latest
+          ports:
+            - containerPort: 8090
+              protocol: TCP
+              name: http
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: helloworld
+  namespace: helloworld
+spec:
+  selector:
+    app: helloworld
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: http
+      name: http
+  type: LoadBalancer # or NodePort/ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: helloworld-ingress
+  namespace: helloworld
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /echo(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: helloworld
+                port:
+                  name: http
+      #host: www.example.com
