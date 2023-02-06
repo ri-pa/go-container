@@ -40,7 +40,6 @@ jobs:
         uses: docker/build-push-action@v3
         if: github.event_name != 'pull_request'
         with:
-          context: target/docker/stage
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}:latest
